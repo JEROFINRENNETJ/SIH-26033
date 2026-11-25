@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KisanHub</title>
+<style>
+:root{--bg:#eef3ee;--cd:#fff;--tx:#1c2a1f;--mu:#5b6b5e;--pr:#2f6b3a;--pt:#fff;--ac:#e0a526;--bd:#d5dfd5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101811;--cd:#1a251b;--tx:#e6efe5;--mu:#9db09f;--pr:#6fbd7b;--pt:#0d160e;--bd:#2b3b2d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101811;--cd:#1a251b;--tx:#e6efe5;--mu:#9db09f;--pr:#6fbd7b;--pt:#0d160e;--bd:#2b3b2d;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI","Noto Sans Tamil","Noto Sans Devanagari",sans-serif}
+header{background:var(--pr);color:var(--pt);padding:12px 14px 0;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+h1{font-size:20px;margin:0;letter-spacing:-.2px}h1 small{display:block;font-size:11px;font-weight:400;opacity:.85}
+h3{margin:18px 0 6px}
+select,input,button{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;min-height:38px}
+header select{color:#1c2a1f;background:#fff;min-height:32px;padding:3px 6px}
+nav{display:flex;gap:2px;margin-top:10px;overflow-x:auto}
+nav button{flex:1;white-space:nowrap;background:transparent;color:var(--pt);border:0;border-radius:8px 8px 0 0;opacity:.8}
+nav button.on{background:var(--bg);color:var(--pr);opacity:1;font-weight:600}
+main{max-width:640px;margin:0 auto;padding:12px 12px 90px}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:12px;margin:10px 0}
+.row{display:flex;gap:8px;align-items:center}.g{flex:1}
+input,select{width:100%;box-sizing:border-box;margin:4px 0}
+.row input{margin:0}
+button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--ac);outline-offset:1px}
+button.on{background:var(--pr);color:var(--pt);border-color:var(--pr)}
+.pri{width:100%;background:var(--pr);color:var(--pt);border:0;font-weight:600;margin-top:8px}
+.big{font-size:34px}.pr{font-weight:700;color:var(--pr);font-size:17px}s,small,.mu{color:var(--mu)}
+.sv{color:var(--pr);font-weight:600}
+.tag{background:var(--ac);color:#2a1d00;border-radius:6px;padding:1px 6px;font-size:12px;margin-left:6px;font-weight:600}
+.qty{display:flex;align-items:center;gap:8px}.qty button{width:38px;font-size:18px}
+table{width:100%;border-collapse:collapse;margin:8px 0}td{padding:3px 0}td+td{text-align:right}.tt td{border-top:1px solid var(--bd);font-weight:700;padding-top:6px}
+.bar{display:flex;gap:3px;margin:8px 0 2px}.bar i{flex:1;height:6px;border-radius:3px;background:var(--bd)}.bar i.d{background:var(--pr)}
+.st{border:0;background:none;font-size:20px;padding:0 2px;color:var(--bd);min-height:0}.st.on{color:var(--ac)}
+.fb{height:10px;border-radius:5px;background:var(--pr);margin:3px 0}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:20px;display:none;z-index:9}
+svg{width:100%;height:auto;background:var(--bg);border-radius:8px}
+@media(prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+</style></head><body>
+<header><div class="top"><h1>KisanHub<small id="tg"></small></h1>
+<select id="lg" aria-label="Language" onchange="S.lang=this.value;render()"><option value="en">English</option><option value="ta">தமிழ்</option><option value="hi">हिन्दी</option></select></div>
+<nav id="nv"></nav></header>
+<main id="app"></main><div id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s);
+const L={en:{shop:'Shop',farmer:'Farmer',hub:'Ration Hub',ai:'AI Insights',tg:'Fresh from the farm, collected at your ration shop',search:'Search produce',pickup:'Pick up at shop',home:'Home delivery',place:'Place order',orders:'My orders',rc:'Ration card and hub',list:'List your produce',desk:'Assisted order desk',earn:'Commission earned'},
+ta:{shop:'கடை',farmer:'விவசாயி',hub:'ரேஷன் மையம்',ai:'AI பார்வை',tg:'பண்ணையிலிருந்து உங்கள் ரேஷன் கடைக்கு',search:'தேடு',pickup:'கடையில் பெறுக',home:'வீட்டு டெலிவரி',place:'ஆர்டர் செய்',orders:'என் ஆர்டர்கள்',rc:'ரேஷன் அட்டை, மையம்',list:'விளைபொருளை பதிவு செய்',desk:'உதவி ஆர்டர் மேசை',earn:'கமிஷன் வருவாய்'},
+hi:{shop:'दुकान',farmer:'किसान',hub:'राशन केंद्र',ai:'AI जानकारी',tg:'खेत से सीधे आपकी राशन दुकान तक',search:'खोजें',pickup:'दुकान से लें',home:'होम डिलीवरी',place:'ऑर्डर करें',orders:'मेरे ऑर्डर',rc:'राशन कार्ड और केंद्र',list:'अपनी उपज जोड़ें',desk:'सहायता ऑर्डर डेस्क',earn:'कमीशन आय'}};
+const t=k=>(L[S.lang]||L.en)[k]||L.en[k];
+const H=[{n:'Anna Nagar Ration Shop',x:3,y:4},{n:'Perur Fair Price Shop',x:7,y:1},{n:'Kovil Street Ration Shop',x:-4,y:5},{n:'Meenakshi Fair Price Shop',x:-2,y:-5}];
+let P=[{id:1,n:'Tomato',e:'🍅',f:'Murugan',p:22,m:38,q:120,g:'A',d:3,dm:30},{id:2,n:'Onion',e:'🧅',f:'FPO Sathy',p:28,m:45,q:200,g:'A',d:10,dm:40},{id:3,n:'Banana',e:'🍌',f:'Lakshmi SHG',p:30,m:52,q:80,g:'B',d:1,dm:20},{id:4,n:'Spinach',e:'🥬',f:'Ravi',p:18,m:30,q:40,g:'A',d:1,dm:12},{id:5,n:'Ponni Rice',e:'🌾',f:'FPO Thanjavur',p:42,m:60,q:500,g:'A',d:90,dm:90},{id:6,n:'Mango',e:'🥭',f:'Selvi',p:55,m:90,q:60,g:'A',d:4,dm:15}];
+let S={tab:'shop',lang:'en',hub:0,cart:{},mode:'pickup',slot:'Tomorrow 8-10 AM',rc:'',q:'',orders:[]};
+const ST=['Placed','Pooled and routed','At hub','Quality checked','Handed over'];
+try{const d=JSON.parse(localStorage.getItem('kh')||'null');if(d){P=d.P;S.orders=d.o;S.rc=d.rc}}catch(e){}
+const save=()=>{try{localStorage.setItem('kh',JSON.stringify({P,o:S.orders,rc:S.rc}))}catch(e){}};
+const rs=n=>'₹'+(+n).toFixed(n%1?1:0),pr=p=>p.d<=1?+(p.p*.75).toFixed(1):p.p,pf=id=>P.find(p=>p.id==id);
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y)*2,O={x:0,y:0};
+function tot(c=S.cart,m=S.mode){let k=0,f=0,mk=0;for(const id in c){const p=pf(id);k+=c[id];f+=c[id]*pr(p);mk+=c[id]*p.m}const hc=k*2,df=m=='home'&&k?15:0;return{k,f,hc,df,mk,t:f+hc+df}}
+function toast(m){const e=$('#toast');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',2200)}
+function add(id,d){const p=pf(id);const c=Math.max(0,Math.min((S.cart[id]||0)+d,p.q));c?S.cart[id]=c:delete S.cart[id];render()}
+function place(c,hub,mode,slot,by,who){const T=tot(c,mode);if(!T.k)return 0;for(const id in c)pf(id).q-=c[id];S.orders.unshift({id:'KH'+(1001+S.orders.length),hub,c:{...c},mode,slot,T,st:0,by,who:who||'You'});save();return 1}
+function order(){if(place(S.cart,S.hub,S.mode,S.slot,'app')){S.cart={};toast('Order placed');render()}}
+const rate=(id,n)=>{S.orders.find(o=>o.id==id).r=n;save();render()},refund=id=>{S.orders.find(o=>o.id==id).rf=1;save();toast('Refund requested');render()},adv=id=>{S.orders.find(o=>o.id==id).st++;save();render()};
+function mic(){try{const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return toast('Voice search is not supported on this browser');const r=new R();r.lang={en:'en-IN',ta:'ta-IN',hi:'hi-IN'}[S.lang];r.onresult=e=>{S.q=e.results[0][0].transcript;render()};r.start()}catch(e){toast('Voice search unavailable')}}
+const bar=s=>`<div class="bar">${ST.map((_,i)=>`<i class="${i<=s?'d':''}"></i>`).join('')}</div><small>${ST[s]}</small>`;
+const hubSel=()=>`<select onchange="S.hub=+this.value;render()" aria-label="Hub">${H.map((h,i)=>`<option value="${i}" ${i==S.hub?'selected':''}>📍 ${h.n}</option>`).join('')}</select>`;
+const items=o=>Object.keys(o.c).map(id=>pf(id).e+' '+pf(id).n+' '+o.c[id]+'kg').join(', ');
+
+function shop(){const q=S.q.toLowerCase(),T=tot();
+const ps=P.filter(p=>p.n.toLowerCase().includes(q)&&p.q>0);
+const my=S.orders.filter(o=>o.by=='app');
+return `<div class="card"><b>${t('rc')}</b><input placeholder="Ration card number (optional)" value="${S.rc}" onchange="S.rc=this.value;save()">${hubSel()}</div>
+<div class="row"><input id="q" placeholder="${t('search')}" value="${S.q}" oninput="S.q=this.value;render(1)"><button onclick="mic()" aria-label="Voice search">🎤</button></div>
+${ps.map(p=>`<div class="card row"><span class="big">${p.e}</span><div class="g"><b>${p.n}</b> <small>Grade ${p.g}, ${p.f}</small>${p.d<=1?'<span class="tag">Surplus 25% off</span>':''}<br><span class="pr">${rs(pr(p))}/kg</span> <s>${rs(p.m)}</s> <small class="sv">${Math.round((1-pr(p)/p.m)*100)}% below market</small></div>
+<div class="qty"><button onclick="add(${p.id},-1)" aria-label="Less">−</button><b>${S.cart[p.id]||0}</b><button onclick="add(${p.id},1)" aria-label="More">+</button></div></div>`).join('')||'<p class="mu">Nothing found. Try another name.</p>'}
+${T.k?`<div class="card"><b>🛒 ${T.k} kg</b>
+<div class="row" style="margin:8px 0"><button class="g ${S.mode=='pickup'?'on':''}" onclick="S.mode='pickup';render()">${t('pickup')}</button><button class="g ${S.mode=='home'?'on':''}" onclick="S.mode='home';render()">${t('home')}</button></div>
+<select onchange="S.slot=this.value">${['Tomorrow 8-10 AM','Tomorrow 4-6 PM','Day after 8-10 AM'].map(s=>`<option ${s==S.slot?'selected':''}>${s}</option>`).join('')}</select>
+<table><tr><td>Farmer price</td><td>${rs(T.f)}</td></tr><tr><td>Hub commission (₹2/kg)</td><td>${rs(T.hc)}</td></tr><tr><td>Delivery</td><td>${T.df?rs(T.df):'Free'}</td></tr><tr class="tt"><td>Total</td><td>${rs(T.t)}</td></tr></table>
+<small>The same basket costs about ${rs(T.mk)} at the local market. You save ${rs(T.mk-T.t)}.</small>
+<button class="pri" onclick="order()">${t('place')}</button>
+<a href="https://wa.me/?text=${encodeURIComponent('KisanHub order: '+Object.keys(S.cart).map(i=>pf(i).n+' '+S.cart[i]+'kg').join(', ')+' at '+H[S.hub].n)}" target="_blank" rel="noopener"><small>Share order on WhatsApp</small></a></div>`:''}
+${my.length?`<h3>${t('orders')}</h3>`+my.map(o=>`<div class="card"><b>${o.id}</b> <small>${H[o.hub].n}</small><br><small>${items(o)}<br>${o.slot}, ${o.mode}, ${rs(o.T.t)}</small>${bar(o.st)}
+${o.st==4?`<div class="row">${[1,2,3,4,5].map(n=>`<button class="st ${o.r>=n?'on':''}" onclick="rate('${o.id}',${n})" aria-label="${n} stars">★</button>`).join('')}<span class="g"></span><button onclick="refund('${o.id}')" ${o.rf?'disabled':''}>${o.rf?'Refund requested':'Report issue and refund'}</button></div>`:''}</div>`).join(''):''}`}
+
+function route(){const hs=[...new Set(S.orders.filter(o=>o.st<2).map(o=>o.hub))],l=hs.length?hs:H.map((_,i)=>i);let cur=O,left=[...l],seq=[],d=0;
+while(left.length){let b=0;left.forEach((i,j)=>{if(dist(cur,H[i])<dist(cur,H[left[b]]))b=j});const i=left.splice(b,1)[0];d+=dist(cur,H[i]);cur=H[i];seq.push(i)}
+d+=dist(cur,O);return{seq,d,sep:l.reduce((s,i)=>s+2*dist(O,H[i]),0),demo:!hs.length}}
+function farmer(){const need={};S.orders.filter(o=>o.st<2).forEach(o=>{for(const id in o.c)need[id]=(need[id]||0)+o.c[id]});
+const earn=S.orders.filter(o=>o.st==4).reduce((s,o)=>s+o.T.f,0),R=route(),pts=[O,...R.seq.map(i=>H[i]),O];
+return `<div class="card"><b>💰 Earnings released: ${rs(earn)}</b><br><small>Payment is released when the hub hands over the order.</small></div>
+<div class="card"><b>${t('list')}</b><input id="an" placeholder="Produce name"><div class="row"><input id="ak" type="number" placeholder="kg"><input id="ap" type="number" placeholder="₹ per kg"></div>
+<div class="row"><select id="ag"><option>A</option><option>B</option><option>C</option></select><input id="ad" type="number" placeholder="Shelf life (days)"></div>
+<small>Add a photo at the hub for grade check. The AI tab shows a fair price.</small><button class="pri" onclick="addP()">List produce</button></div>
+<h3>Your listings</h3>${P.map(p=>`<div class="card row"><span class="big">${p.e}</span><div class="g"><b>${p.n}</b> <small>${p.q} kg left, ${rs(p.p)}/kg</small><br><small>AI fair price: ${rs(Math.round(p.m*.7))}/kg</small></div></div>`).join('')}
+<h3>Pooled load to deliver</h3><div class="card">${Object.keys(need).map(id=>`<div>${pf(id).e} ${pf(id).n}: <b>${need[id]} kg</b></div>`).join('')||'<small>No pending orders yet.</small>'}
+<svg viewBox="-60 -65 150 130" role="img" aria-label="Route map"><polyline fill="none" stroke="var(--pr)" stroke-width="2" points="${pts.map(p=>p.x*10+','+p.y*10).join(' ')}"/>${R.seq.map((i,n)=>`<circle cx="${H[i].x*10}" cy="${H[i].y*10}" r="6" fill="var(--ac)"/><text x="${H[i].x*10+9}" y="${H[i].y*10+4}" font-size="9" fill="var(--tx)">${n+1}. ${H[i].n.split(' ')[0]}</text>`).join('')}<rect x="-5" y="-5" width="10" height="10" fill="var(--pr)"/><text x="8" y="4" font-size="9" fill="var(--tx)">Farm pickup</text></svg>
+<small>${R.demo?'Sample route over all hubs. ':''}Optimized trip: <b>${R.d.toFixed(1)} km</b> instead of ${R.sep.toFixed(1)} km with separate trips (saves ${Math.round((1-R.d/R.sep)*100)}%).</small>
+<button class="pri" onclick="S.orders.filter(o=>o.st==0).forEach(o=>o.st=1);save();toast('Load dispatched');render()">Dispatch pooled load</button></div>`}
+function addP(){const n=$('#an').value.trim(),q=+$('#ak').value,p=+$('#ap').value;if(!n||!q||!p)return toast('Enter name, kg and price');
+P.push({id:Date.now(),n,e:'🥕',f:'You',p,m:Math.round(p*1.6),q,g:$('#ag').value,d:+$('#ad').value||5,dm:Math.max(5,Math.round(q/4))});save();toast('Produce listed');render()}
+
+function hubv(){const os=S.orders.filter(o=>o.hub==S.hub),act=os.filter(o=>o.st<4),com=os.filter(o=>o.st==4).reduce((s,o)=>s+o.T.hc,0);
+return `<div class="card">${hubSel()}<div class="row" style="margin-top:6px"><div class="g">${t('earn')}<br><b>${rs(com)}</b></div><div class="g">Active orders<br><b>${act.length}</b></div></div></div>
+${act.map(o=>`<div class="card"><b>${o.id}</b> ${o.who}${o.by=='desk'?'<span class="tag">Desk</span>':''}<br><small>${items(o)}</small>${bar(o.st)}${o.st>=1?`<button class="pri" onclick="adv('${o.id}')">Mark: ${ST[o.st+1]}</button>`:'<small>Waiting for the farmer to dispatch the load.</small>'}</div>`).join('')||'<p class="mu">No active orders for this hub.</p>'}
+<div class="card"><b>${t('desk')}</b><br><small>For customers without smartphones, or orders received by SMS or WhatsApp.</small><input id="dn" placeholder="Customer name or phone"><div class="row"><select id="dp">${P.map(p=>`<option value="${p.id}">${p.e} ${p.n}</option>`).join('')}</select><input id="dk" type="number" value="2" aria-label="kg"></div><button class="pri" onclick="desk()">${t('place')}</button></div>`}
+function desk(){const c={[$('#dp').value]:Math.min(+$('#dk').value||0,pf($('#dp').value).q)};if(place(c,S.hub,'pickup',S.slot,'desk',$('#dn').value||'Walk-in')){toast('Order placed for customer');render()}else toast('Enter a valid kg')}
+
+function ai(){const pend={};S.orders.filter(o=>o.st<2).forEach(o=>{for(const id in o.c)pend[id]=(pend[id]||0)+o.c[id]});
+const F=P.map(p=>{const h=[.9,1,1.1,1.05].map(x=>p.dm*x),w=(h[0]+2*h[1]+3*h[2]+4*h[3])/10;return{p,f:Math.round(w*1.05+(pend[p.id]||0))}}),mx=Math.max(...F.map(x=>x.f)),top=[...F].sort((a,b)=>b.f-a.f)[0];
+return `<div class="card"><b>Demand forecast for the next slot (kg)</b>${F.map(x=>`<div style="margin-top:8px">${x.p.e} ${x.p.n}: <b>${x.f}</b> <small>stock ${x.p.q}</small><div class="fb" style="width:${x.f/mx*100}%"></div></div>`).join('')}
+<small>Weighted 4-day average of past orders, plus pending orders.</small></div>
+<div class="card"><b>Crop advice</b><br>Demand is highest for ${top.p.e} ${top.p.n}. Farmers near these hubs should plan more of it.</div>
+<div class="card"><b>Fair price check</b>${P.map(p=>{const s=Math.round(p.m*.7),d=p.p-s;return `<div>${p.e} ${p.n}: listed ${rs(p.p)}, fair ${rs(s)} <small class="${d>2?'':'sv'}">${d>2?'High, may slow sales':d<-2?'Low, you can raise it':'Good'}</small></div>`}).join('')}</div>
+<div class="card"><b>Surplus alerts</b><br>${P.filter(p=>p.d<=1).map(p=>`${p.e} ${p.n} expires in ${p.d} day: sold at 25% off`).join('<br>')||'None'}</div>`}
+
+function render(f){const v={shop,farmer,hub:hubv,ai}[S.tab];$('#app').innerHTML=v();$('#tg').textContent=t('tg');$('#lg').value=S.lang;
+$('#nv').innerHTML=['shop','farmer','hub','ai'].map(k=>`<button class="${S.tab==k?'on':''}" onclick="S.tab='${k}';render()">${t(k)}</button>`).join('');
+if(f&&$('#q')){const q=$('#q');q.focus();q.setSelectionRange(q.value.length,q.value.length)}}
+render();
+</script></body></html>
